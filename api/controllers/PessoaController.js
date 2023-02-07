@@ -47,7 +47,7 @@ class PessoaController {
 
       if (pessoa) {
         await database.Pessoas.update(novaPessoa, { where: { id: Number(id) } })
-        return res.status(200).json({ message: "Usuário atualizado com sucesso."});
+        return res.status(200).json({ message: "Usuário atualizado com sucesso." });
       } else {
         return res.status(404).json({ message: "Usuário não encontrado." });
       }
@@ -69,6 +69,16 @@ class PessoaController {
       } else {
         return res.status(404).json({ message: "Usuário não encontrado." });
       }
+    } catch (error) {
+      return res.status(500).json(error.message)
+    }
+  }
+
+  static async buscaMatricula(req, res) {
+    try {
+      const { estudanteId, matriculaId } = req.params;
+      const matricula = await database.Matriculas.findOne({ where: { id: Number(matriculaId), estudante_id: Number(estudanteId) } })
+      return res.status(200).json(matricula);
     } catch (error) {
       return res.status(500).json(error.message)
     }

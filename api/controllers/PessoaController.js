@@ -86,7 +86,7 @@ class PessoaController {
 
   static async criarMatricula(req, res) {
     const { estudanteId } = req.params;
-    const novaMatricula = { ...req.body, estudante_id: Number(estudanteId)}
+    const novaMatricula = { ...req.body, estudante_id: Number(estudanteId) }
 
     try {
       // Valida se pessoa existe
@@ -104,6 +104,36 @@ class PessoaController {
 
       await database.Matriculas.create(novaMatricula)
       return res.status(200).json({ message: "Matrícula criada com sucesso." });
+    } catch (error) {
+      return res.status(500).json(error.message)
+    }
+  }
+
+  static async atualizarMatricula(req, res) {
+    try {
+      const { estudanteId, matriculaId } = req.params;
+      const novaMatricula = { ...req.body, estudante_id: Number(estudanteId), matricula_id: Number(matriculaId) };
+
+      const matricula = await database.Matriculas.findOne({ where: { id: Number(novaMatricula.matricula_id) } })
+
+      if (!matricula) {
+        return res.status(404).json({ message: "A matrícula informada não existe." });
+      }
+      // Valida se pessoa existe
+      const pessoa = await database.Pessoas.findOne({ where: { id: Number(novaMatricula.estudante_id) } })
+
+      if (!pessoa) {
+        return res.status(404).json({ message: "O estudante informado não existe." });
+      }
+
+      const turma = await database.Turmas.findOne({ where: { id: Number(novaMatricula.turma_id) } })
+
+      if (!turma) {
+        return res.status(404).json({ message: "A turma informada não existe." });
+      }
+
+      await database.Matriculas.update(novaMatricula, { where: { id: Number(novaMatricula.matricula_id) } })
+      return res.status(200).json({ message: "Matrícula atualizada com sucesso." });
     } catch (error) {
       return res.status(500).json(error.message)
     }

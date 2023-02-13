@@ -74,11 +74,36 @@ class PessoaController {
     }
   }
 
-  static async buscaMatricula(req, res) {
+  static async buscarMatricula(req, res) {
     try {
       const { estudanteId, matriculaId } = req.params;
       const matricula = await database.Matriculas.findOne({ where: { id: Number(matriculaId), estudante_id: Number(estudanteId) } })
       return res.status(200).json(matricula);
+    } catch (error) {
+      return res.status(500).json(error.message)
+    }
+  }
+
+  static async criarMatricula(req, res) {
+    const { estudanteId } = req.params;
+    const novaMatricula = { ...req.body, estudante_id: Number(estudanteId)}
+
+    try {
+      // Valida se pessoa existe
+      const pessoa = await database.Pessoas.findOne({ where: { id: Number(novaMatricula.estudante_id) } })
+
+      if (!pessoa) {
+        return res.status(404).json({ message: "O estudante informado não existe." });
+      }
+
+      const turma = await database.Turmas.findOne({ where: { id: Number(novaMatricula.turma_id) } })
+
+      if (!turma) {
+        return res.status(404).json({ message: "A turma informada não existe." });
+      }
+
+      await database.Matriculas.create(novaMatricula)
+      return res.status(200).json({ message: "Matrícula criada com sucesso." });
     } catch (error) {
       return res.status(500).json(error.message)
     }

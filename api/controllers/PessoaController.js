@@ -132,8 +132,32 @@ class PessoaController {
         return res.status(404).json({ message: "A turma informada não existe." });
       }
 
-      await database.Matriculas.update(novaMatricula, { where: { id: Number(novaMatricula.matricula_id) } })
+      await database.Matriculas.update(novaMatricula, { where: { id: Number(novaMatricula.matricula_id), estudante_id: Number(estudanteId) } })
       return res.status(200).json({ message: "Matrícula atualizada com sucesso." });
+    } catch (error) {
+      return res.status(500).json(error.message)
+    }
+  }
+
+  static async removerMatricula(req, res) {
+    try {
+      const { estudanteId, matriculaId } = req.params;
+
+      // Valida se pessoa existe
+      const pessoa = await database.Pessoas.findOne({ where: { id: Number(estudanteId) } })
+
+      if (!pessoa) {
+        return res.status(404).json({ message: "O estudante informado não existe." });
+      }
+
+      const matricula = await database.Matriculas.findOne({ where: { id: Number(matriculaId) } })
+
+      if (!matricula) {
+        return res.status(404).json({ message: "A matrícula informada não existe." });
+      }
+
+      await database.Matriculas.destroy({ where: { id: Number(matriculaId), estudante_id: Number(estudanteId) } })
+      return res.status(200).json({ message: "Matricula deletada com sucesso." });
     } catch (error) {
       return res.status(500).json(error.message)
     }
